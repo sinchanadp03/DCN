@@ -1,0 +1,127 @@
+ 2-router
+first do the schema like in schema.png
+now open consoles and enter the following commands
+ pc1>ip 192.168.1.1/24 192.168.1.254
+ pc2>ip 192.168.1.2/24 192.168.1.254
+ pc3>ip 192.168.2.1/24 192.168.2.254
+ pc4>ip 192.168.2.2/24 192.168.2.254
+now setup the router 1.
+r1#config t
+//setting up the switch connections
+r1(config)#int f0/0
+r1(config-if)#ip address 192.168.1.254 255.255.255.0
+r1(config-if)#no shutdown
+r1(config-if)#exit
+//setting up the router2 connections
+r1(config)#int f1/0
+r1(config-if)#ip address 192.168.5.1 255.255.255.0
+r1(config-if)#no shutdown
+r1(config-if)#exit
+Now for setting up Router 2
+r2#config t
+//setting up the switch connections
+r2(config)#int f0/0
+r2(config-if)#ip address 192.168.2.254 255.255.255.0
+r2(config-if)#no shutdown
+r2(config-if)#exit
+//setting up the router2 connections
+r2(config)#int f1/0
+r2(config-if)#ip address 192.168.5.2 255.255.255.0
+r2(config-if)#no shutdown
+r2(config-if)#exit
+now send a ping from pc1 to pc4 to check if the connection is established
+pc1>ping 192.168.2.2 -c 1
+The output should be Host Unreachable
+Now we will establish a connection from router 1 to router 2
+r1(config)#ip route 192.168.2.0 255.255.255.0 192.168.5.2
+r2(config)#ip route 192.168.1.0 255.255.255.0 192.168.5.1
+Now if we ping from pc2 to pc4
+pc2>ping 192.168.2.2 -c 1
+We observe that the ping is sent successfully implying that the connection has been successfully established.
+=====================================================================================================================
+DHCP
+#start with the router config
+config t
+int f0/0
+ip address 192.168.1.254 255.255.255.0
+no shut
+exit
+ip dhcp pool formation
+network 192.168.1.0 255.255.255.0
+default-router 192.168.1.254
+dns-server 192.168.1.254
+class ec2lt
+address range 192.168.1.2 192.168.1.4
+exit
+exit
+do wr
+#in pc configuration
+ip dhcp
+======================================================================================================
+1. HUB simulation using gns3
+Just follow the connection according the schema.png.
+Open console for each vpc and assign ip:
+ pc1>ip 192.168.1.1
+ pc2>ip 192.168.1.2
+ pc3>ip 192.168.1.3
+ pc4>ip 192.168.1.4
+Right Click on the connection made between pc1 and hub and click start capture.
+Then Ping pc1 to pc4
+ pc1>ping 192.168.1.4
+ ============================================================================================
+Router Simulation using gns3
+PC configurstion through terminals
+PC1.1> ip 192.168.1.1/24 192.168.1.254
+PC1.2> ip 192.168.1.2/24 192.168.1.254
+PC2.1> ip 192.168.2.1/24 192.168.2.254
+PC2.2> ip 192.168.2.2/24 192.168.2.254
+Router configuration through terminal
+# for connection 0/0
+config t
+int f0/0
+ip address 192.168.1.254 255.255.255.0
+no shut
+end
+#for connection 1/0
+config t
+int f1/0
+ip address 192.168.2.254 255.255.255.0
+no shut
+end
+============================================================================================
+1. SWITCH simulation using gns3
+Just follow the connection according the schema.png.
+Open console for each vpc and assign ip:
+ pc1>ip 192.168.1.1
+ pc2>ip 192.168.1.2
+ pc3>ip 192.168.1.3
+ pc4>ip 192.168.1.4
+Right Click on the connection made between pc1 and switch and click start capture.
+Then Ping pc1 to pc2
+ pc1>ping 192.168.1.2
+Then Ping pc1 to pc3
+ pc1>ping 192.168.1.3
+ ==============================================================================================
+VLAN simulation
+Do the connection according to the schema.
+Select draw an eclipse -> drag -> right click -> lower 1 layer -> rename to grp 1 and grp 2.
+open console and assign ip to the pc 
+ pc1>ip 192.168.1.1/24
+ pc2>ip 192.168.1.2/24
+ pc3>ip 192.168.1.3/24
+ pc4>ip 192.168.1.4/24 
+Now Ping Pc1 -> Pc3 and Pc1 -> Pc2 
+ pc1>ping 192.168.1.3
+ pc1>ping 192.168.1.2
+Now Select the cable/connection and delete it.
+Now Right Click on Switch -> Configure -> Port 
+ Port Vlan 
+ 0 1
+ 1 1
+ 2 2
+ 3 2
+Then Click on Apply -> Ok 
+Connect all the pc's again to switch and start.
+Now Ping Pc1 -> Pc3 and Pc1 -> Pc2 
+ pc1>ping 192.168.1.3 (Not Reachable)
+ pc1>ping 192.168.1.2 (Ping works)
